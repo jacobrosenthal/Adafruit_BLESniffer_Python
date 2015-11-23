@@ -11,10 +11,13 @@ It has been tested on the following platforms using Python 2.7:
 
 ## Related Links
 
-Bluefruit LE Sniffer product page: https://www.adafruit.com/product/2269
-Bluefruit LE Sniffer Learning Guide: https://learn.adafruit.com/introducing-the-adafruit-bluefruit-le-sniffer/introduction
-Nordic Semiconductor nRF Sniffer: https://www.nordicsemi.com/eng/nordic/download_resource/31920/14/46380928
-BLE Sniffer in Linux using Wireshark: https://devzone.nordicsemi.com/blogs/750/ble-sniffer-in-linux-using-wireshark
+[Bluefruit LE Sniffer product page](https://www.adafruit.com/product/2269)
+
+[Bluefruit LE Sniffer Learning Guide](https://learn.adafruit.com/introducing-the-adafruit-bluefruit-le-sniffer/introduction)
+
+[Nordic Semiconductor nRF Sniffer](https://www.nordicsemi.com/eng/Products/Bluetooth-Smart-Bluetooth-low-energy/nRF-Sniffer)
+
+[BLE Sniffer in Linux using Wireshark](https://devzone.nordicsemi.com/blogs/750/ble-sniffer-in-linux-using-wireshark)
 
 # Sniffer Python Wrapper
 
@@ -61,7 +64,7 @@ Alternatively stop the Wireshark capture.
 
 This Python script was written and tested on **Python 2.7.6**, and will require that both Python 2.7 and **pySerial** are installed on your system.
 
-To build Wireshark for Linux follow the instructions at `BLE Sniffer in Linux using Wireshark: https`://devzone.nordicsemi.com/blogs/750/ble-sniffer-in-linux-using-wireshark.
+To build Wireshark for Linux follow the instructions at [BLE Sniffer in Linux using Wireshark](https://devzone.nordicsemi.com/blogs/750/ble-sniffer-in-linux-using-wireshark).
 
 **NOTE:** to run Wireshark from the build directory run:
 ```
