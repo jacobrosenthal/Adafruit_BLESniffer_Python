@@ -1,0 +1,11 @@
+The files contained in this directory are available for download
+from the blog article "BLE Sniffer in Linux using Wireshark"
+on the Nordic Developer Zone site[1]
+
+There is no license associated to these files so I assume they
+can freely distributed and modified.
+
+Note: as reported in the blog, example_linux.py does not compile
+due to a missing ':' at the end of line 47.
+
+[1] https://devzone.nordicsemi.com/blogs/750/ble-sniffer-in-linux-using-wireshark/
