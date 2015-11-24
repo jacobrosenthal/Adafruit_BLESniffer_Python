@@ -96,7 +96,10 @@ class PcapPipe(object):
 
     def makePacketHeader(self, length):
 
-        timeNow = time.clock()
+        if(os.name == 'posix'):
+            timeNow = time.time()
+        else:
+            timeNow = time.clock()
 
         TS_SEC      = int(timeNow)
         TS_USEC     = int((timeNow-TS_SEC)*1000000)
