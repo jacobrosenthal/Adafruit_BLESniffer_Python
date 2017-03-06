@@ -7,17 +7,20 @@ import os
 import sys
 import time
 import argparse
+import logging
 
 from SnifferAPI import Logger
 from SnifferAPI import Sniffer
 from SnifferAPI import CaptureFiles
 from SnifferAPI.Devices import Device
 from SnifferAPI.Devices import DeviceList
-
+from PcapPipe import PcapPipe
 
 mySniffer = None
 """@type: SnifferAPI.Sniffer.Sniffer"""
 
+myPipe = None
+"""@type: PcapPipe.PcapPipe"""
 
 def setup(serport, delay=6):
     """
@@ -94,23 +97,23 @@ def selectDevice(devlist):
             # This will start a new scan
             return None
 
+def loop():
+    """Main loop printing some useful statistics"""
 
-def dumpPackets():
-    """Dumps incoming packets to the display"""
-    # Get (pop) unprocessed BLE packets.
-    packets = mySniffer.getPackets()
-    # Display the packets on the screen in verbose mode
-    if args.verbose:
-        for packet in packets:
-            if packet.blePacket is not None:
-                # Display the raw BLE packet payload
-                # Note: 'BlePacket' is nested inside the higher level 'Packet' wrapper class
-                print packet.blePacket.payload
-            else:
-                print packet
-    else:
-        print '.' * len(packets)
+    nLoops = 0
+    nPackets = 0
+    connected = False
+    while myPipe.isOpen():
+        time.sleep(0.1)
 
+        packets   = mySniffer.getPackets()
+        nLoops   += 1
+        nPackets += len(packets)
+
+        if connected != mySniffer.inConnection or nLoops % 20 == 0:
+            connected = mySniffer.inConnection
+            print "\rconnected: {}, packets: {}, missed: {}".format(mySniffer.inConnection, nPackets, mySniffer.missedPackets),
+            sys.stdout.flush()
 
 if __name__ == '__main__':
     """Main program execution point"""
@@ -143,7 +146,7 @@ if __name__ == '__main__':
                            dest="verbose",
                            action="store_true",
                            default=False,
-                           help="verbose mode (all serial traffic is displayed)")
+                           help="verbose mode")
 
     # Parser the arguments passed in from the command-line
     args = argparser.parse_args()
@@ -165,6 +168,10 @@ if __name__ == '__main__':
     # Optionally display some information about the sniffer
     if args.verbose:
         print "Sniffer Firmware Version: " + str(mySniffer.swversion)
+        # Configure log level to INFO
+        logger = logging.getLogger()
+        logger.addHandler(logging.StreamHandler())
+        logger.setLevel(logging.INFO)
 
     # Scan for devices in range until the user makes a selection
     try:
@@ -195,17 +202,28 @@ if __name__ == '__main__':
                                                                            "%02X" % d.address[5])
         # Make sure we actually followed the selected device (i.e. it's still available, etc.)
         if d is not None:
+            # Create a named pipe for Wireshark capture
+            pipeFilePath = os.path.join(Logger.logFilePath, "ble.pipe")
+            if os.path.exists(pipeFilePath):
+                os.remove(pipeFilePath)
+
+            print "Start wireshark with -Y btle -k -i %s" % os.path.abspath(pipeFilePath)
+
+            myPipe = PcapPipe()
+            myPipe.open_and_init(pipeFilePath)
+
             mySniffer.follow(d)
+
+            mySniffer.subscribe("NEW_BLE_PACKET", myPipe.newBlePacket)
         else:
             print "ERROR: Could not find the selected device"
 
-        # Dump packets
-        while True:
-            dumpPackets()
-            time.sleep(1)
+        # Main loop
+        loop();
 
         # Close gracefully
         mySniffer.doExit()
+        myPipe.close()
         sys.exit()
 
     except (KeyboardInterrupt, ValueError, IndexError) as e:
@@ -213,4 +231,5 @@ if __name__ == '__main__':
         if 'KeyboardInterrupt' not in str(type(e)):
             print "Caught exception:", e
         mySniffer.doExit()
+        myPipe.close()
         sys.exit(-1)
